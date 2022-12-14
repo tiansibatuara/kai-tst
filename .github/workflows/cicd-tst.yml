@@ -60,4 +60,4 @@ jobs:
            yes | head -1
            echo "dangling image removed"
            # Run image and open port
-           docker run -d -p 80:5000 --name kai-container tiansibatuara/tst-service-kai
+           docker run -d -p 5000:5000 --name kai-container tiansibatuara/tst-service-kai
