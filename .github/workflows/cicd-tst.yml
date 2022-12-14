@@ -47,7 +47,7 @@ jobs:
            # Login Docker
            docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
            # Pull image
-           docker pull tiansibatuara/tst-service-kai
+           docker pu0ll tiansibatuara/tst-service-kai
            echo "new image pulled"
            # Stop running container
            docker stop kai-container
