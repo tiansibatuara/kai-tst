@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 from sqlalchemy import text
 import bcrypt
+import requests
 import jwt
 import secrets
 import re
@@ -14,6 +15,8 @@ import json
 
 load_dotenv()
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
+
 
 
 app.config["SECRET_KEY"] = "secret"
@@ -319,9 +322,91 @@ def winPredict():
     predictionTeam = player_info[1]['Team']
     predictionLeague = player_info[1]['Tournament']
 
-  response = {"Team 1" : player_info[0]['Team'], "Team 2" : player_info[1]['Team'], "Winner Team Prediction" : predictionTeam, "Winner Team Prediction Leauge" : predictionLeague}
+  response = {"Team 1" : player_info[0]['Team'], "Team 2" : player_info[1]['Team'], "Winner Team Prediction" : predictionTeam, "Winner Team Prediction League" : predictionLeague}
 
   print(response)
+  return jsonify(response)
+
+
+@app.route('/useFPCore', methods=['GET'])
+def useFPCore():
+  auth_header = request.args.get("Authorization")
+
+  valid = checkToken(auth_header)
+
+  if not valid:
+    return "Token not valid", 404
+
+  body = request.json
+
+  dataLogin = {
+    'email' : body['email'],
+    'password': body['password'],
+    }
+
+  namaTim = {
+    "teamName" : body['teamName']
+  }
+
+  idTeam = {
+    "opponentId" : body["opponentId"]
+  }
+
+
+  dataPemain = {
+    "id1" : body['id1'],
+    "id2" : body['id2'],
+    "id3" : body['id3'],
+    "id4" : body['id4'],
+    "id5" : body['id5'],
+    "id6" : body['id6'],
+    "id7" : body['id7'],
+    "id8" : body['id8'],
+    "id9" : body['id9'],
+    "id10" : body['id10'],
+    "id11" : body['id11']
+  }
+
+ 
+  response = requests.post('http://206.189.80.94/log-in', json = dataLogin)
+  result = response.json()
+  tokenMoz = result['token']
+  print(tokenMoz)
+
+  response2 = requests.get('http://206.189.80.94/dreamTeam?Authorization=Bearer %s' % (tokenMoz), json = dataPemain)
+  result2 = response2.json()
+
+  expectedGoal = result2["Expected Goal"]
+  dreamTeamRating = result2["Team Rating"]
+  calculation = expectedGoal*dreamTeamRating
+  dreamTeamLeague = "Custom Team"
+
+  rows = []
+  for pinfo in cur.execute(text("SELECT * FROM `football_teams` WHERE `Id` =:teamid"), {"teamid": idTeam["opponentId"]}):
+    rows.append(pinfo)
+  player_info = []
+
+  for p in rows:
+    expectedGoals = p[3]/p[4]
+    player_info.append({
+      "Id" : p[0],
+      "Team" : p[1],
+      "Tournament" : p[2],
+      "Shots_pg" : str(p[4]),
+      "Rating" : str(p[10]),
+      "Calculation" : str(expectedGoals * p[10])
+    })
+  
+  if float(player_info[0]['Calculation']) > float(calculation):
+    predictionTeam = player_info[0]['Team']
+    predictionLeague = player_info[0]['Tournament']
+  else:
+    predictionTeam = namaTim["teamName"]
+    predictionLeague = dreamTeamLeague
+
+  response = {"Team 1" : player_info[0]['Team'], "Team 2" : namaTim["teamName"], "Winner Team Prediction" : predictionTeam, "Winner Team Prediction League" : predictionLeague}
+
+
   return jsonify(response)
 
 if __name__ == '__main__':
