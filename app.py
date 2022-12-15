@@ -94,7 +94,7 @@ def createUser():
 
   cur.execute('INSERT INTO user(email, password) VALUES (%s, %s) ', (data['email'], encodedPass))
 
-@app.route('/sign-up', methods=['GET', 'POST'])
+@app.route('/sign-up', methods=['POST'])
 def signUp():
   json_data = request.json
 
@@ -121,7 +121,7 @@ def signUp():
       return "Failed to send OTP! Please retry!", 400
     return res, 200
 
-@app.route('/log-in', methods=['GET', 'POST'])
+@app.route('/log-in', methods=['POST'])
 def logIn():
     json_data = request.json
 
