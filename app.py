@@ -32,7 +32,7 @@ def hello_world():  # put application's code here
 
 # Authentication
 
-key = "kaitampan"
+key = "tiantampan"
 
 def encodeStr(ePass):
   hashed_password = bcrypt.hashpw((key+ePass).encode("utf-8"), bcrypt.gensalt())
@@ -306,17 +306,20 @@ def winPredict():
     player_info.append({
       "Id" : p[0],
       "Team" : p[1],
+      "Tournament" : p[2],
       "Shots_pg" : str(p[4]),
       "Rating" : str(p[10]),
       "Calculation" : str(expectedGoals * p[10])
     })
   
   if float(player_info[0]['Calculation']) > float(player_info[1]['Calculation']):
-    prediction = player_info[0]['Team']
+    predictionTeam = player_info[0]['Team']
+    predictionLeague = player_info[0]['Tournament']
   else:
-    prediction = player_info[1]['Team']
+    predictionTeam = player_info[1]['Team']
+    predictionLeague = player_info[1]['Tournament']
 
-  response = {"Team 1" : player_info[0]['Team'], "Team 2" : player_info[1]['Team'], "Winner Prediction" : prediction}
+  response = {"Team 1" : player_info[0]['Team'], "Team 2" : player_info[1]['Team'], "Winner Team Prediction" : predictionTeam, "Winner Team Prediction Leauge" : predictionLeague}
 
   print(response)
   return jsonify(response)
